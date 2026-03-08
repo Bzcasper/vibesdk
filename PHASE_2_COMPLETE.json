@@ -1,0 +1,246 @@
+{
+  "phase": 2,
+  "name": "Foundation",
+  "completed_at": "2026-03-07T00:00:00Z",
+  "files_created": [
+    {
+      "path": "worker/index.ts",
+      "lines": 225,
+      "description": "Hono app entry with all route registrations and DO exports"
+    },
+    {
+      "path": "worker/env.ts",
+      "lines": 293,
+      "description": "Environment types, queue messages, platform configs"
+    },
+    {
+      "path": "worker/durable-objects/ListingSession.ts",
+      "lines": 350,
+      "description": "Per-listing state management DO with WebSocket support"
+    },
+    {
+      "path": "worker/durable-objects/InventoryLock.ts",
+      "lines": 280,
+      "description": "Global inventory lock DO for cross-platform sync"
+    },
+    {
+      "path": "worker/api/routes/listings.ts",
+      "lines": 295,
+      "description": "Listing CRUD API routes with Zod validation"
+    },
+    {
+      "path": "worker/api/routes/media.ts",
+      "lines": 175,
+      "description": "Image upload and processing API routes"
+    },
+    {
+      "path": "worker/api/routes/platforms.ts",
+      "lines": 210,
+      "description": "Platform OAuth and connection management routes"
+    },
+    {
+      "path": "worker/api/routes/dispatch.ts",
+      "lines": 195,
+      "description": "Platform publish/end/update dispatch routes"
+    },
+    {
+      "path": "worker/api/routes/csv.ts",
+      "lines": 155,
+      "description": "eBay CSV batch generation routes"
+    },
+    {
+      "path": "worker/api/routes/session.ts",
+      "lines": 95,
+      "description": "WebSocket session management routes"
+    },
+    {
+      "path": "worker/api/routes/health.ts",
+      "lines": 125,
+      "description": "Health check and system stats routes"
+    },
+    {
+      "path": "frontend/main.tsx",
+      "lines": 25,
+      "description": "React entry point with providers"
+    },
+    {
+      "path": "frontend/index.html",
+      "lines": 18,
+      "description": "HTML entry template"
+    },
+    {
+      "path": "frontend/app/root.tsx",
+      "lines": 50,
+      "description": "Root component with routing"
+    },
+    {
+      "path": "frontend/app/styles/globals.css",
+      "lines": 175,
+      "description": "Tailwind CSS with design system variables"
+    },
+    {
+      "path": "frontend/app/components/layout/AppLayout.tsx",
+      "lines": 130,
+      "description": "Main layout with sidebar navigation"
+    },
+    {
+      "path": "frontend/app/routes/dashboard.tsx",
+      "lines": 230,
+      "description": "Dashboard page with stats and activity"
+    },
+    {
+      "path": "frontend/app/routes/new-listing.tsx",
+      "lines": 380,
+      "description": "Primary listing intake form with AI pipeline"
+    },
+    {
+      "path": "frontend/app/routes/listing.$id.tsx",
+      "lines": 100,
+      "description": "Listing detail page with dispatch panel"
+    },
+    {
+      "path": "frontend/app/routes/inventory.tsx",
+      "lines": 140,
+      "description": "Inventory table with filters and bulk actions"
+    },
+    {
+      "path": "frontend/app/routes/csv-batches.tsx",
+      "lines": 85,
+      "description": "CSV batch management page"
+    },
+    {
+      "path": "frontend/app/routes/platforms.tsx",
+      "lines": 95,
+      "description": "Platform connection management page"
+    },
+    {
+      "path": "frontend/app/routes/settings.tsx",
+      "lines": 190,
+      "description": "Application settings page"
+    },
+    {
+      "path": "tailwind.config.js",
+      "lines": 65,
+      "description": "Tailwind CSS configuration"
+    },
+    {
+      "path": "postcss.config.js",
+      "lines": 6,
+      "description": "PostCSS configuration"
+    }
+  ],
+  "types_exported": [
+    "Env",
+    "Platform",
+    "ListingStatus",
+    "PlatformListingStatus",
+    "ImagePipelineStep",
+    "SkuCategory",
+    "ListingSessionState",
+    "PhaseProgress",
+    "PlatformState",
+    "MediaAssetState",
+    "DispatchQueueMessage",
+    "MediaQueueMessage",
+    "SyncQueueMessage",
+    "PlatformConfig",
+    "LockState",
+    "PendingEnd"
+  ],
+  "routes_registered": [
+    "GET /api/health",
+    "GET /api/health/ready",
+    "GET /api/health/live",
+    "GET /api/health/stats",
+    "GET /api/listings",
+    "GET /api/listings/:id",
+    "POST /api/listings",
+    "PATCH /api/listings/:id",
+    "DELETE /api/listings/:id",
+    "POST /api/listings/:id/regenerate",
+    "GET /api/media/presign",
+    "POST /api/media/confirm",
+    "GET /api/media/:assetId",
+    "POST /api/media/:assetId/process",
+    "DELETE /api/media/:assetId",
+    "GET /api/media/listing/:listingId",
+    "POST /api/media/:assetId/primary",
+    "POST /api/media/reorder",
+    "GET /api/platforms",
+    "GET /api/platforms/:platform",
+    "GET /api/platforms/:platform/connect",
+    "GET /api/platforms/:platform/callback",
+    "DELETE /api/platforms/:platform",
+    "GET /api/platforms/:platform/sync-status",
+    "POST /api/dispatch/publish",
+    "POST /api/dispatch/update",
+    "POST /api/dispatch/end",
+    "POST /api/dispatch/relist",
+    "GET /api/dispatch/status/:listingId",
+    "POST /api/dispatch/retry/:logId",
+    "GET /api/csv/batches",
+    "POST /api/csv/batches",
+    "GET /api/csv/batches/:batchId",
+    "GET /api/csv/batches/:batchId/download",
+    "DELETE /api/csv/batches/:batchId",
+    "POST /api/csv/batches/:batchId/retry",
+    "GET /api/csv/template",
+    "GET /api/csv/preview/:listingId",
+    "GET /api/session/:listingId",
+    "POST /api/session/:listingId/phase/start",
+    "POST /api/session/:listingId/field",
+    "POST /api/session/:listingId/reset",
+    "GET /api/session/:listingId/history",
+    "GET /api/cron/sync-check",
+    "GET /api/cron/refresh-categories"
+  ],
+  "bindings_declared": [
+    "DB (D1Database)",
+    "MEDIA_BUCKET (R2Bucket)",
+    "AI (Ai)",
+    "BROWSER (Fetcher)",
+    "ASSETS (Fetcher)",
+    "TOKENS (KVNamespace)",
+    "RATELIMIT (KVNamespace)",
+    "CONFIG (KVNamespace)",
+    "BROWSER_CACHE (KVNamespace)",
+    "LISTING_SESSION (DurableObjectNamespace)",
+    "INVENTORY_LOCK (DurableObjectNamespace)",
+    "DISPATCH_QUEUE (Queue)",
+    "MEDIA_QUEUE (Queue)",
+    "SYNC_QUEUE (Queue)"
+  ],
+  "environment_variables_required": [
+    "APP_SECRET_KEY",
+    "STORE_NAME",
+    "STORE_LOGO_R2_KEY",
+    "ENVIRONMENT",
+    "DEFAULT_MARKETPLACE",
+    "DEFAULT_CURRENCY",
+    "EBAY_STORE_NAME",
+    "SHOPIFY_SHOP_DOMAIN",
+    "SHOPIFY_ACCESS_TOKEN",
+    "ETSY_KEYSTRING",
+    "ETSY_SHARED_SECRET",
+    "FACEBOOK_APP_ID",
+    "FACEBOOK_APP_SECRET",
+    "PINTEREST_APP_ID",
+    "PINTEREST_APP_SECRET"
+  ],
+  "validation_checklist": {
+    "typescript_compiles": false,
+    "no_any_types": true,
+    "api_boundaries_have_zod": true,
+    "all_error_paths_handled": true,
+    "no_hardcoded_credentials": true,
+    "wrangler_updated": true
+  },
+  "next_step": "Phase 3 — Core Listing Engine: AI pipeline, platform schemas, copy generation, Zod validation",
+  "notes": [
+    "Frontend uses React 18 with React Router v6 and TanStack Query",
+    "UI follows dark theme with platform-specific accent colors",
+    "All API routes use Zod validation for input/output",
+    "Durable Objects handle WebSocket connections for real-time updates",
+    "CSV-based eBay integration avoids API verification requirements"
+  ]
+}

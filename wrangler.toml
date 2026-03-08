@@ -1,0 +1,237 @@
+# ============================================================
+# CASPERS JEWELRY — Multi-Platform Listing System
+# Cloudflare Workers Configuration
+# ============================================================
+
+name = "caspers-jewelry-listings"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ============================================================
+# DURABLE OBJECTS
+# ============================================================
+
+[[durable_objects.bindings]]
+name = "LISTING_SESSION"
+class_name = "ListingSession"
+script_name = "caspers-jewelry-listings"
+
+[[durable_objects.bindings]]
+name = "INVENTORY_LOCK"
+class_name = "InventoryLock"
+script_name = "caspers-jewelry-listings"
+
+# Durable Object migrations (applied on first deploy)
+[[migrations]]
+tag = "v1"
+new_classes = ["ListingSession", "InventoryLock"]
+
+# ============================================================
+# D1 DATABASE
+# ============================================================
+
+[[d1_databases]]
+binding = "DB"
+database_name = "caspers-jewelry-db"
+database_id = "preview-database-id"  # Replace with actual ID after `wrangler d1 create`
+
+# ============================================================
+# R2 BUCKETS
+# ============================================================
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "caspers-jewelry-media"
+
+# ============================================================
+# KV NAMESPACES
+# ============================================================
+
+# OAuth tokens and secrets (encrypted at rest)
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "preview-kv-id-tokens"  # Replace after `wrangler kv:namespace create TOKENS`
+
+# Rate limiting counters
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "preview-kv-id-ratelimit"  # Replace after `wrangler kv:namespace create RATELIMIT`
+
+# App configuration and cached data
+[[kv_namespaces]]
+binding = "CONFIG"
+id = "preview-kv-id-config"  # Replace after `wrangler kv:namespace create CONFIG`
+
+# Browser session cache
+[[kv_namespaces]]
+binding = "BROWSER_CACHE"
+id = "preview-kv-id-browser"  # Replace after `wrangler kv:namespace create BROWSER_CACHE`
+
+# ============================================================
+# QUEUES
+# ============================================================
+
+# Platform dispatch queue (publish, end, sync operations)
+[[queues.producers]]
+binding = "DISPATCH_QUEUE"
+queue = "dispatch-queue"
+
+[[queues.consumers]]
+queue = "dispatch-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 5
+dead_letter_queue = "dispatch-dead-letter"
+
+# Media processing queue (image pipeline)
+[[queues.producers]]
+binding = "MEDIA_QUEUE"
+queue = "media-queue"
+
+[[queues.consumers]]
+queue = "media-queue"
+max_batch_size = 5
+max_batch_timeout = 60
+max_retries = 3
+
+# Sync check queue (periodic listing health)
+[[queues.producers]]
+binding = "SYNC_QUEUE"
+queue = "sync-queue"
+
+[[queues.consumers]]
+queue = "sync-queue"
+max_batch_size = 20
+max_batch_timeout = 60
+max_retries = 3
+
+# ============================================================
+# WORKERS AI
+# ============================================================
+
+[ai]
+binding = "AI"
+
+# ============================================================
+# BROWSER RENDERING
+# ============================================================
+
+[browser]
+binding = "BROWSER"
+
+# ============================================================
+# ASSETS (Frontend SPA)
+# ============================================================
+
+[assets]
+directory = "frontend/dist"
+binding = "ASSETS"
+
+# ============================================================
+# ENVIRONMENT VARIABLES (Secrets in .dev.vars / Dashboard)
+# ============================================================
+
+# Non-secret config can go here
+[vars]
+ENVIRONMENT = "development"
+STORE_NAME = "Caspers Jewelry"
+DEFAULT_MARKETPLACE = "EBAY_US"
+DEFAULT_CURRENCY = "USD"
+
+# ============================================================
+# DEVELOPMENT SETTINGS
+# ============================================================
+
+[dev]
+port = 8787
+local_protocol = "http"
+upstream_protocol = "https"
+
+# ============================================================
+# PRODUCTION SETTINGS
+# ============================================================
+
+[env.production]
+name = "caspers-jewelry-listings-prod"
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "caspers-jewelry-db-prod"
+database_id = "production-database-id"  # Replace
+
+[[env.production.r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "caspers-jewelry-media-prod"
+
+[[env.production.kv_namespaces]]
+binding = "TOKENS"
+id = "production-kv-tokens"  # Replace
+
+[[env.production.kv_namespaces]]
+binding = "RATELIMIT"
+id = "production-kv-ratelimit"  # Replace
+
+[[env.production.kv_namespaces]]
+binding = "CONFIG"
+id = "production-kv-config"  # Replace
+
+[[env.production.kv_namespaces]]
+binding = "BROWSER_CACHE"
+id = "production-kv-browser"  # Replace
+
+# ============================================================
+# STAGING SETTINGS
+# ============================================================
+
+[env.staging]
+name = "caspers-jewelry-listings-staging"
+vars = { ENVIRONMENT = "staging" }
+
+# ============================================================
+# LOGGING
+# ============================================================
+
+[observability]
+enabled = true
+head_sampling_rate = 1.0  # Log all requests (reduce in production)
+
+# ============================================================
+# LIMITS
+# ============================================================
+
+[limits]
+cpu_ms = 50000  # 50 seconds for AI operations
+
+# ============================================================
+# BUILD SETTINGS
+# ============================================================
+
+[build]
+command = "npm run build:worker"
+watch_dir = "worker"
+
+# ============================================================
+# MODULE RULES (TypeScript/ESM)
+# ============================================================
+
+rules = [
+  { type = "ESModule", globs = ["**/*.ts", "**/*.tsx"], fallthrough = true }
+]
+
+# ============================================================
+# NOOP TRIGGERS (Scheduled tasks)
+# ============================================================
+
+# Daily sync check at 6 AM UTC
+[[triggers.crons]]
+cron = "0 6 * * *"
+method = "GET"
+path = "/api/cron/sync-check"
+
+# Weekly category cache refresh (Sundays at 3 AM UTC)
+[[triggers.crons]]
+cron = "0 3 * * 0"
+method = "GET"
+path = "/api/cron/refresh-categories"

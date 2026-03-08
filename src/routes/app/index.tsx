@@ -146,8 +146,8 @@ export default function AppView() {
 	}, [id, fetchAppDetails]);
 
 
-	// Convert agent files to chat FileType format
-	const files = useMemo<FileType[]>(() => {
+	// Convert agent files to chat FileObject format
+	const files = useMemo<FileObject[]>(() => {
 		if (!app?.agentSummary?.generatedCode) return [];
 		return app.agentSummary.generatedCode
 			.filter((file) => file && file.filePath && typeof file.filePath === 'string')
@@ -175,7 +175,7 @@ export default function AppView() {
 	}, [files, activeFilePath]);
 
 	// File click handler
-	const handleFileClick = useCallback((file: FileType) => {
+	const handleFileClick = useCallback((file: FileObject) => {
 		setActiveFilePath(file.filePath);
 	}, []);
 

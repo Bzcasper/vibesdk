@@ -1,310 +1,461 @@
 /**
- * Centralized API types - imports and re-exports types from worker
- * This file serves as the single source of truth for frontend-worker API communication
+ * Listing Factory API Types
+ * Unified Source of Truth for Frontend/Backend
  */
-import { SessionResponse } from 'worker/utils/authUtils';
-import { AuthUser } from './api-types';
 
-export type { SecretTemplate } from 'worker/types/secretsTemplates';
+import { Listing, ListingInput } from "../shared/types/listing";
 
-// Base API Response Types
-export type { ControllerResponse, ApiResponse } from 'worker/api/controllers/types';
+// ============================================================================
+// Core API Response Types
+// ============================================================================
 
-// Database Types
-export type {
-  PaginationInfo,
-  EnhancedAppData,
-  AppWithFavoriteStatus,
-  TimePeriod,
-  AppSortOption,
-  SortOrder,
-  AppQueryOptions,
-  PublicAppQueryOptions
-} from 'worker/database/types';
-
-// App-related API Types
-export type { 
-  AppsListData,
-  PublicAppsData, 
-  SingleAppData,
-  FavoriteToggleData,
-  CreateAppData,
-  UpdateAppVisibilityData,
-  AppDeleteData,
-  AppWithUserAndStats
-} from 'worker/api/controllers/apps/types';
-
-export type {
-  AppDetailsData,
-  AppStarToggleData,
-  GeneratedCodeFile,
-  GitCloneTokenData
-} from 'worker/api/controllers/appView/types';
-
-// User-related API Types
-export type {
-  UserAppsData,
-  ProfileUpdateData,
-} from 'worker/api/controllers/user/types';
-
-// Stats API Types
-export type {
-  UserStatsData,
-  UserActivityData
-} from 'worker/api/controllers/stats/types';
-
-// Analytics API Types
-export type {
-  UserAnalyticsResponseData,
-  AgentAnalyticsResponseData,
-} from 'worker/api/controllers/analytics/types';
-
-export type { PlatformStatusData } from 'worker/api/controllers/status/types';
-
-export type { CapabilitiesData } from 'worker/api/controllers/capabilities/types';
-
-export type {
-  ViewMode,
-  FeatureCapabilities,
-  FeatureDefinition,
-  ViewDefinition,
-  PlatformCapabilities,
-  PlatformCapabilitiesConfig,
-} from 'worker/agents/core/features/types';
-
-export {
-  DEFAULT_FEATURE_DEFINITIONS,
-  getBehaviorTypeForProject,
-} from 'worker/agents/core/features';
-
-// Model Config API Types
-export type {
-  ModelConfigsData,
-  ModelConfigData,
-  ModelConfigUpdateData,
-  ModelConfigTestData,
-  ModelConfigResetData,
-  ModelConfigDefaultsData,
-  ModelConfigDeleteData,
-  ByokProvidersData,
-  UserProviderStatus,
-  ModelsByProvider
-} from 'worker/api/controllers/modelConfig/types';
-
-// Model Provider API Types
-export type {
-  ModelProvidersListData,
-  ModelProviderData,
-  ModelProviderCreateData,
-  ModelProviderUpdateData,
-  ModelProviderDeleteData,
-  ModelProviderTestData,
-  CreateProviderRequest,
-  UpdateProviderRequest,
-  TestProviderRequest
-} from 'worker/api/controllers/modelProviders/types';
-
-// Frontend model config update interface that matches backend schema
-export interface ModelConfigUpdate {
-  modelName?: string | null;
-  maxTokens?: number | null;
-  temperature?: number | null;
-  reasoningEffort?: string | null;
-  fallbackModel?: string | null;
-  isUserOverride?: boolean;
+export interface APIResponse<T> {
+	success: boolean;
+	data?: T;
+	error?: string;
 }
 
-// Secrets API Types
-export type { SecretTemplatesData } from 'worker/api/controllers/secrets/types';
+// Alias for compatibility
+export type ApiResponse<T = unknown> = APIResponse<T>;
 
-// Vault API Types
+export type ListingsResponse = APIResponse<Listing[]>;
+export type ListingCreateRequest = ListingInput;
+export type ListingCreateResponse = APIResponse<Listing>;
+
+// ============================================================================
+// Re-export from Worker - Core Types
+// ============================================================================
+
+// Agent and Project Types (imported first for use in other types)
+import type { BehaviorType, ProjectType } from "../worker-legacy/agents/core/types";
+export type { BehaviorType, ProjectType };
+
+export type { AgentState, PhasicState } from "../worker-legacy/agents/core/state";
+
+// File and Template Types
+export type { FileOutputType, FileConceptType, PhaseConceptType } from "../worker-legacy/agents/schemas";
+export type { TemplateDetails } from "../worker-legacy/services/sandbox/sandboxTypes";
+
+// Image and Media Types
+export type { ImageAttachment } from "../worker-legacy/types/image-attachment";
+export {
+	SUPPORTED_IMAGE_MIME_TYPES,
+	isSupportedImageType,
+	MAX_IMAGE_SIZE_BYTES,
+	MAX_IMAGES_PER_MESSAGE,
+	type SupportedImageMimeType,
+	type ProcessedImageAttachment,
+	getFileExtensionFromMimeType,
+} from "../worker-legacy/types/image-attachment";
+
+// Blueprint Types
+export type { 
+	PhasicBlueprint, 
+	LitePhasicBlueprint,
+	AgenticBlueprint,
+	TemplateSelection,
+	Blueprint,
+} from "../worker-legacy/agents/schemas";
+
+// Blueprint Type (phasic | agentic)
+export type BlueprintType = BehaviorType;
+
+// Feature and Capability Types
+export type { ViewMode } from "../worker-legacy/agents/core/features/types";
 export type {
-	VaultConfig,
-	VaultConfigResponse,
-	VaultStatusResponse,
-	SetupVaultRequest,
+	FeatureCapabilities,
+	FeatureDefinition,
+	ViewDefinition,
+	PlatformCapabilities,
+} from "../worker-legacy/agents/core/features/types";
+
+export {
+	DEFAULT_FEATURE_DEFINITIONS,
+	getBehaviorTypeForProject,
+} from "../worker-legacy/agents/core/features/types";
+
+// Model Configuration Types
+import type { ModelConfig } from "../worker-legacy/agents/inferutils/config.types";
+export type { ModelConfig };
+export type { 
+	UserModelConfigWithMetadata,
+	UserStats,
+	UserActivity,
+} from "../worker-legacy/database/types";
+
+// ============================================================================
+// Auth and Session Types
+// ============================================================================
+
+import type {
+	AuthUser,
+	AuthSession,
+	OAuthProvider,
+} from "../worker-legacy/types/auth-types";
+
+export type {
+	AuthUser,
+	AuthSession,
+	OAuthProvider,
+	TokenPayload,
+	AuthUserSession,
+	AuthResult,
+	OAuthUserInfo,
+	OAuthTokens,
+	ApiKeyInfo,
+	PasswordValidationResult,
+	SecurityContext,
+	AuditLogEntry,
+	PendingWsTicket,
+	TicketConsumptionResult,
+} from "../worker-legacy/types/auth-types";
+
+// ============================================================================
+// Vault and Secrets Types
+// ============================================================================
+
+export type {
 	KdfAlgorithm,
-	Argon2Params,
+	SecretType,
 	SecretMetadata,
-} from 'worker/services/secrets/vault-types';
+	VaultConfig,
+	Argon2Params,
+	VaultStatusResponse,
+	VaultConfigResponse,
+	SetupVaultRequest,
+	StoreSecretRequest,
+	EncryptedSecret,
+	SecretListItem,
+} from "../worker-legacy/services/secrets/vault-types";
 
-// Agent/CodeGen API Types
-export type {
-  AgentConnectionData,
-} from 'worker/api/controllers/agent/types';
+export type { SecretTemplate } from "../worker-legacy/types/secretsTemplates";
 
-// Template Types
-export type {
-  TemplateDetails,
-} from 'worker/services/sandbox/sandboxTypes';
+// ============================================================================
+// Rate Limiting Types
+// ============================================================================
 
-// WebSocket Types
-export type {
-  WebSocketMessage,
-  WebSocketMessageData,
-  CodeFixEdits,
-  ModelConfigsInfoMessage,
-  AgentDisplayConfig,
-  ModelConfigsInfo
-} from 'worker/api/websocketTypes';
+export type { RateLimitError } from "../worker-legacy/services/rate-limit/errors";
 
-// Database/Schema Types commonly used in frontend
-export type { 
-  App,
-  User,
-  UserModelConfig,
-  UserModelProvider
-} from 'worker/database/schema';
+export interface RateLimitExceededError {
+	message: string;
+	limitType: string;
+	limit?: number;
+	period?: number;
+	suggestions?: string[];
+}
 
-export type {
-  FavoriteToggleResult,
-  UserStats,
-  UserActivity,
-  UserModelConfigWithMetadata,
-  ModelTestResult
-} from 'worker/database/types';
+export type SecurityErrorType = 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_SIGNATURE';
 
-// Agent/Generator Types
-export type {
-  Blueprint as BlueprintType,
-  PhasicBlueprint,
-  CodeReviewOutputType,
-  FileConceptType,
-  FileOutputType as GeneratedFile,
-} from 'worker/agents/schemas';
+export interface SecurityError extends Error {
+	type: SecurityErrorType;
+	details?: unknown;
+}
+
+// ============================================================================
+// Database and App Types
+// ============================================================================
+
+import type { UserActivity as UserActivityType } from "../worker-legacy/database/types";
 
 export type {
-  AgentState,
-  PhasicState
-} from 'worker/agents/core/state';
+	PaginationInfo,
+	EnhancedAppData,
+	AppWithFavoriteStatus,
+	FavoriteToggleResult,
+	PaginatedResult,
+	PaginationParams,
+	TimePeriod,
+	AppSortOption,
+	SortOrder,
+	BaseAppQueryOptions,
+	AppQueryOptions,
+	PublicAppQueryOptions,
+	OwnershipResult,
+	AppVisibilityUpdateResult,
+	SimpleAppCreation,
+	AppForForkResult,
+	BatchAppStats,
+	TeamStats,
+	BoardStats,
+	AppStats,
+	Visibility,
+	UserActivity as UserActivityType,
+} from "../worker-legacy/database/types";
+
+// ============================================================================
+// Controller Response Types - Apps
+// ============================================================================
 
 export type {
-  BehaviorType,
-  ProjectType
-} from 'worker/agents/core/types';
+	AppWithUserAndStats,
+	AppsListData,
+	PublicAppsData,
+	FavoriteToggleData,
+	CreateAppData,
+	UpdateAppVisibilityData,
+	AppDeleteData,
+} from "../worker-legacy/api/controllers/apps/types";
 
 export type {
-  ConversationMessage,
-} from 'worker/agents/inferutils/common';
+	AppDetailsData,
+	AppStarToggleData,
+	GitCloneTokenData,
+} from "../worker-legacy/api/controllers/appView/types";
 
-export type { 
-  RuntimeError,
-  StaticAnalysisResponse 
-} from 'worker/services/sandbox/sandboxTypes';
+// ============================================================================
+// Controller Response Types - Model Config
+// ============================================================================
 
-// Config/Inference Types
-export type { 
-  AgentActionKey,
-  AgentConfig,
-  ModelConfig,
-  ReasoningEffortType as ReasoningEffort,
-  ProviderOverrideType as ProviderOverride
-} from 'worker/agents/inferutils/config.types';
+export type {
+	ModelConfigsData,
+	ModelConfigData,
+	ModelConfigUpdateData,
+	ModelConfigTestData,
+	ModelConfigResetData,
+	ModelConfigDefaultsData,
+	ModelConfigDeleteData,
+	ByokProvidersData,
+	UserProviderStatus,
+	ModelsByProvider,
+} from "../worker-legacy/api/controllers/modelConfig/types";
 
-export type { RateLimitError } from "worker/services/rate-limit/errors";
-export type { AgentPreviewResponse, CodeGenArgs } from 'worker/api/controllers/agent/types';
-export { MAX_AGENT_QUERY_LENGTH } from 'worker/api/controllers/agent/types';
-export type { RateLimitErrorResponse } from 'worker/api/responses';
-export { RateLimitExceededError, SecurityError, SecurityErrorType } from '../shared/types/errors.js';
+// ============================================================================
+// Controller Response Types - Model Providers
+// ============================================================================
 
-export type { AIModels } from 'worker/agents/inferutils/config.types';
-// Model selection types
-export type ModelSelectionMode = 'platform' | 'byok' | 'custom';
+export interface ModelProviderData {
+	id: string;
+	provider: string;
+	config: Record<string, unknown>;
+	createdAt?: Date;
+	updatedAt?: Date;
+}
 
-// Match chat FileType interface
+export interface ModelProviderCreateData {
+	provider: ModelProviderData;
+	message: string;
+}
+
+export interface ModelProviderUpdateData {
+	provider: ModelProviderData;
+	message: string;
+}
+
+export interface ModelProviderDeleteData {
+	success: boolean;
+	message: string;
+}
+
+export interface ModelProviderTestData {
+	success: boolean;
+	message: string;
+	error?: string;
+}
+
+// CreateProviderRequest, UpdateProviderRequest, TestProviderRequest
+export interface CreateProviderRequest {
+	provider: string;
+	config: Record<string, unknown>;
+}
+
+export interface UpdateProviderRequest {
+	providerId: string;
+	config: Record<string, unknown>;
+}
+
+export interface TestProviderRequest {
+	provider: string;
+	config: Record<string, unknown>;
+}
+
+export interface ModelProvidersListData {
+	providers: ModelProviderData[];
+}
+
+// ============================================================================
+// Controller Response Types - Secrets
+// ============================================================================
+
+export type { SecretTemplatesData } from "../worker-legacy/api/controllers/secrets/types";
+
+// ============================================================================
+// Controller Response Types - Stats and Analytics
+// ============================================================================
+
+export type { UserStatsData } from "../worker-legacy/api/controllers/stats/types";
+
+export interface UserActivityData {
+	activities: UserActivityType[];
+}
+
+export type {
+	UserAnalyticsResponseData,
+	AgentAnalyticsResponseData,
+} from "../worker-legacy/api/controllers/analytics/types";
+
+// ============================================================================
+// Controller Response Types - User and Profile
+// ============================================================================
+
+export type { UserAppsData, ProfileUpdateData } from "../worker-legacy/api/controllers/user/types";
+
+// ============================================================================
+// Controller Response Types - Capabilities
+// ============================================================================
+
+export type { CapabilitiesData } from "../worker-legacy/api/controllers/capabilities/types";
+
+// ============================================================================
+// Controller Response Types - Status
+// ============================================================================
+
+export type { PlatformStatusData } from "../worker-legacy/api/controllers/status/types";
+
+// ============================================================================
+// Agent and Connection Types
+// ============================================================================
+
+export type {
+	AgentConnectionData,
+	CodeGenArgs,
+	AgentPreviewResponse,
+} from "../worker-legacy/api/controllers/agent/types";
+
+// ============================================================================
+// WebSocket Message Types
+// ============================================================================
+
+export type {
+	WebSocketMessage,
+	WebSocketMessageData,
+	CodeFixEdits,
+	ModelConfigsInfoMessage,
+	AgentDisplayConfig,
+	ModelConfigsInfo,
+} from "../worker-legacy/api/websocketTypes";
+
+// ============================================================================
+// Conversation and Message Types
+// ============================================================================
+
+export type { ConversationMessage } from "../worker-legacy/agents/inferutils/common";
+
+// ============================================================================
+// Database Schema Types
+// ============================================================================
+
+export type { App } from "../worker-legacy/database/schema";
+
+// ============================================================================
+// Authentication Response Types
+// ============================================================================
+
+export interface LoginResponseData {
+	user: Omit<AuthUser, 'isAnonymous'>;
+	session: AuthSession;
+	accessToken: string;
+	redirectUrl?: string;
+}
+
+export interface RegisterResponseData {
+	user: Omit<AuthUser, 'isAnonymous'>;
+	session: AuthSession;
+	accessToken: string;
+	isNewUser: boolean;
+	requiresEmailVerification?: boolean;
+}
+
+export interface ProfileResponseData {
+	user: Omit<AuthUser, 'isAnonymous'>;
+}
+
+export interface AuthProvidersResponseData {
+	providers: OAuthProvider[];
+	hasOAuth?: boolean;
+	requiresEmailAuth?: boolean;
+}
+
+export interface CsrfTokenResponseData {
+	token: string;
+	header: string;
+}
+
+export interface ActiveSessionsData {
+	sessions: AuthSession[];
+}
+
+export interface ApiKeysData {
+	keys: Array<{
+		id: string;
+		name: string;
+		keyPreview: string;
+		createdAt: Date | null;
+		lastUsed: Date | null;
+		isActive: boolean;
+	}>;
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+export const MAX_AGENT_QUERY_LENGTH = 5000;
+
+// ============================================================================
+// File Type Aliases
+// ============================================================================
+
+/**
+ * FileType represents different code/text file types
+ * This is a string union type for syntax highlighting and code generation
+ */
+export type SyntaxHighlightingFileType = 'typescript' | 'javascript' | 'css' | 'html' | 'json' | 'plaintext';
+
+/**
+ * FileType is now an object representing a file with content and metadata
+ * Previously used as a string, now represents the actual file structure
+ */
 export interface FileType {
 	filePath: string;
 	fileContents: string;
 	explanation?: string;
+	language?: string;
 	isGenerating?: boolean;
 	needsFixing?: boolean;
 	hasErrors?: boolean;
-	language?: string;
 }
 
-// Streaming response wrapper types for agent session creation
-export interface StreamingResponse {
-  success: boolean;
-  stream: Response;
+// ============================================================================
+// Model Configuration Update Type
+// ============================================================================
+
+export interface ModelConfigUpdate extends Partial<ModelConfig> {}
+
+// ============================================================================
+// Agent Streaming Response
+// ============================================================================
+
+export interface AgentStreamingResponse {
+	type: string;
+	data?: unknown;
 }
 
-export type AgentStreamingResponse = StreamingResponse;
 
-export {
-	type ImageAttachment, 
-	isSupportedImageType, 
-	MAX_IMAGE_SIZE_BYTES,
-	MAX_IMAGES_PER_MESSAGE,
-	SUPPORTED_IMAGE_MIME_TYPES
-} from 'worker/types/image-attachment';
 
-// Auth types imported from worker
-export type { 
-  AuthSession, 
-  ApiKeyInfo, 
-  AuthResult, 
-  AuthUser,
-  OAuthProvider 
-} from 'worker/types/auth-types';
-export type { 
-  SessionResponse 
-} from 'worker/utils/authUtils';
+// ============================================================================
+// GitHub Export Types
+// ============================================================================
 
-// Auth API Response Types (using existing worker types)
-export type LoginResponseData = SessionResponse;
-
-export type RegisterResponseData = SessionResponse & {
-  requiresVerification?: boolean;
-};
-
-export type ProfileResponseData = {
-  user: AuthUser;
-  sessionId: string;
-};
-
-export interface AuthProvidersResponseData {
-  providers: {
-    google: boolean;
-    github: boolean;
-    email: boolean;
-  };
-  hasOAuth: boolean;
-  requiresEmailAuth: boolean;
-  csrfToken?: string;
-  csrfExpiresIn?: number;
+export interface GitHubExportOptions {
+	repository?: string;
+	branch?: string;
+	commitMessage?: string;
+	includeConfig?: boolean;
 }
 
-export interface CsrfTokenResponseData {
-  token: string;
-  headerName: string;
-  expiresIn?: number;
+export interface GitHubExportResult {
+	success: boolean;
+	url?: string;
+	error?: string;
+	message?: string;
 }
-
-// Active Sessions Response - matches getUserSessions + isCurrent from controller
-export interface ActiveSessionsData {
-  sessions: Array<{
-    id: string;
-    userAgent: string | null;
-    ipAddress: string | null;
-    lastActivity: Date;
-    createdAt: Date;
-    isCurrent: boolean;
-  }>;
-}
-
-// API Keys Response - matches controller response format
-export interface ApiKeysData {
-  keys: Array<{
-    id: string;
-    name: string;
-    keyPreview: string;
-    createdAt: Date | null;
-    lastUsed: Date | null;
-    isActive: boolean;
-  }>;
-}
-
-export type {
-    GitHubExportOptions,
-    GitHubExportResult,
-} from 'worker/services/github/types';

@@ -20,7 +20,7 @@ export function usePresentationSync(
     useEffect(() => {
         // Helper: Generate hash for file change detection
         const getFileHash = (file: FileType) =>
-            `${file.filePath}-${file.fileContents?.length || 0}-${file.isGenerating ? 'gen' : 'ready'}`;
+            `${file.filePath}-${file.fileContents?.length || 0}`;
 
         // Helper: Categorize file types
         const isSlideFile = (path: string) => path.startsWith(`${slideDirectory}/`) && path.endsWith('.json');
@@ -37,7 +37,7 @@ export function usePresentationSync(
             
             // Skip files currently being generated/streamed
             // These are handled by the streaming event forwarding
-            if (file.isGenerating || generatingSlides.has(file.filePath)) return false;
+            if (generatingSlides.has(file.filePath)) return false;
 
             const currentHash = getFileHash(file);
             const previousHash = fileHashes.current.get(file.filePath);

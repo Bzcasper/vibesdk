@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas-pro';
+import html2canvas from 'html2canvas';
 
 export interface ScreenshotOptions {
   quality?: number;

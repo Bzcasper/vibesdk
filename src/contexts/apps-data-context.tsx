@@ -103,7 +103,7 @@ export function AppsDataProvider({ children }: AppsDataProviderProps) {
         setState(prev => ({
           ...prev,
           loading: { ...prev.loading, allApps: false },
-          error: { ...prev.error, allApps: response.error?.message || 'Failed to fetch apps' },
+          error: { ...prev.error, allApps: typeof response.error === 'string' ? response.error : (typeof response.error === 'object' && response.error && 'message' in response.error) ? (response.error as any).message : 'Failed to fetch apps' },
         }));
       }
     } catch (err) {
@@ -151,10 +151,10 @@ export function AppsDataProvider({ children }: AppsDataProviderProps) {
         setState(prev => ({
           ...prev,
           loading: { ...prev.loading, favoriteApps: false },
-          error: { ...prev.error, favoriteApps: response.error?.message || 'Failed to fetch favorite apps' },
+          error: { ...prev.error, favoriteApps: typeof response.error === 'string' ? response.error : (typeof response.error === 'object' && response.error && 'message' in response.error) ? (response.error as any).message : 'Failed to fetch favorite apps' },
         }));
       }
-    } catch (err) {
+      } catch (err) {
       console.error('Error fetching favorite apps:', err);
       const errorMessage = err instanceof ApiError
         ? `${err.message} (${err.status})`

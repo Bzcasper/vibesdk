@@ -1,0 +1,114 @@
+{
+  "phase": 1,
+  "name": "Blueprint",
+  "completed_at": "2026-03-07T00:00:00Z",
+  "files_created": [
+    {
+      "path": "Blueprint.md",
+      "lines": 842,
+      "description": "Complete project blueprint with ADR, file tree, and platform strategy"
+    },
+    {
+      "path": "worker/db/schema.sql",
+      "lines": 412,
+      "description": "Complete D1 database schema with 9 tables, indexes, triggers, and views"
+    },
+    {
+      "path": "wrangler.toml",
+      "lines": 164,
+      "description": "Cloudflare Worker configuration with all bindings"
+    },
+    {
+      "path": "package.json",
+      "lines": 92,
+      "description": "Project dependencies and scripts"
+    },
+    {
+      "path": "tsconfig.json",
+      "lines": 59,
+      "description": "TypeScript configuration with strict mode"
+    },
+    {
+      "path": "vite.config.ts",
+      "lines": 48,
+      "description": "Vite build configuration for React SPA"
+    },
+    {
+      "path": "worker/env.ts",
+      "lines": 293,
+      "description": "Environment types, queue messages, platform configs"
+    }
+  ],
+  "types_exported": [
+    "Env",
+    "Platform",
+    "ListingStatus",
+    "PlatformListingStatus",
+    "ImagePipelineStep",
+    "SkuCategory",
+    "ListingSessionState",
+    "PhaseProgress",
+    "PlatformState",
+    "MediaAssetState",
+    "DispatchQueueMessage",
+    "MediaQueueMessage",
+    "SyncQueueMessage",
+    "PlatformConfig"
+  ],
+  "routes_registered": [],
+  "bindings_declared": [
+    "DB (D1Database)",
+    "MEDIA_BUCKET (R2Bucket)",
+    "AI (Ai)",
+    "BROWSER (Fetcher)",
+    "ASSETS (Fetcher)",
+    "TOKENS (KVNamespace)",
+    "RATELIMIT (KVNamespace)",
+    "CONFIG (KVNamespace)",
+    "BROWSER_CACHE (KVNamespace)",
+    "LISTING_SESSION (DurableObjectNamespace)",
+    "INVENTORY_LOCK (DurableObjectNamespace)",
+    "DISPATCH_QUEUE (Queue)",
+    "MEDIA_QUEUE (Queue)",
+    "SYNC_QUEUE (Queue)"
+  ],
+  "environment_variables_required": [
+    "APP_SECRET_KEY",
+    "STORE_NAME",
+    "STORE_LOGO_R2_KEY",
+    "ENVIRONMENT",
+    "EBAY_STORE_NAME",
+    "SHOPIFY_SHOP_DOMAIN",
+    "SHOPIFY_ACCESS_TOKEN",
+    "ETSY_KEYSTRING",
+    "ETSY_SHARED_SECRET",
+    "FACEBOOK_APP_ID",
+    "FACEBOOK_APP_SECRET",
+    "PINTEREST_APP_ID",
+    "PINTEREST_APP_SECRET",
+    "DEFAULT_MARKETPLACE",
+    "DEFAULT_CURRENCY"
+  ],
+  "deferred_decisions": [
+    "Cloudflare account setup (D1 database ID, KV namespace IDs)",
+    "Platform OAuth credentials (Etsy, Facebook, Pinterest)",
+    "Shopify store connection (if used)",
+    "Browser automation credentials (Whatnot, Depop, Mercari, Poshmark)",
+    "Store logo upload to R2"
+  ],
+  "validation_checklist": {
+    "typescript_compiles": true,
+    "no_any_types": true,
+    "api_boundaries_have_zod": false,
+    "all_error_paths_handled": false,
+    "no_hardcoded_credentials": true,
+    "wrangler_updated": true
+  },
+  "next_step": "Phase 2 — Foundation: Create Worker entry, Hono routes, Durable Objects, base React app shell",
+  "notes": [
+    "SKU system uses hierarchical format: CJP-{CATEGORY}-{YYMM}-{SEQ}",
+    "eBay integration uses CSV generation + Browser Rendering (not Trading API)",
+    "10 platforms total: 4 API-based, 6 browser-automation-based",
+    "Database uses EAV pattern for platform-specific fields to avoid migrations"
+  ]
+}

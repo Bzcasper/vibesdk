@@ -2,6 +2,22 @@ import React, { memo, useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 import { useTheme } from '../../contexts/theme-context';
 
+// TypeScript language features are deprecated in monaco-editor but still functional
+// Use type assertion to access the deprecated API
+const tsLanguage = monaco.languages.typescript as unknown as {
+	typescriptDefaults: {
+		setDiagnosticsOptions: (opts: { noSemanticValidation: boolean; noSyntaxValidation: boolean }) => void;
+		setCompilerOptions: (opts: Record<string, unknown>) => void;
+	};
+	javascriptDefaults: {
+		setCompilerOptions: (opts: Record<string, unknown>) => void;
+	};
+	JsxEmit: { React: number };
+	ModuleResolutionKind: { NodeJs: number };
+	ModuleKind: { ESNext: number };
+	ScriptTarget: { ESNext: number };
+};
+
 import 'monaco-editor/esm/vs/editor/editor.all.js';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
@@ -147,50 +163,47 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 
 	// Configure TypeScript diagnostics based on mode
 	useEffect(() => {
-		const tsDefaults = monaco.languages.typescript.typescriptDefaults;
-		const jsDefaults = monaco.languages.typescript.javascriptDefaults;
-
 		if (shouldEnableTypeScript) {
 			// Enable full IntelliSense for editing
-			tsDefaults.setDiagnosticsOptions({
+			tsLanguage.typescriptDefaults.setDiagnosticsOptions({
 				noSemanticValidation: false,
 				noSyntaxValidation: false,
 			});
-			tsDefaults.setCompilerOptions({
-				jsx: monaco.languages.typescript.JsxEmit.React,
+			tsLanguage.typescriptDefaults.setCompilerOptions({
+				jsx: tsLanguage.JsxEmit.React,
 				allowJs: true,
 				allowSyntheticDefaultImports: true,
 				esModuleInterop: true,
-				moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-				module: monaco.languages.typescript.ModuleKind.ESNext,
-				target: monaco.languages.typescript.ScriptTarget.ESNext,
+				moduleResolution: tsLanguage.ModuleResolutionKind.NodeJs,
+				module: tsLanguage.ModuleKind.ESNext,
+				target: tsLanguage.ScriptTarget.ESNext,
 				jsxFactory: 'React.createElement',
 				jsxFragmentFactory: 'React.Fragment',
 			});
-			jsDefaults.setCompilerOptions({
+			tsLanguage.javascriptDefaults.setCompilerOptions({
 				allowJs: true,
 				allowSyntheticDefaultImports: true,
 				esModuleInterop: true,
-				jsx: monaco.languages.typescript.JsxEmit.React,
-				moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-				module: monaco.languages.typescript.ModuleKind.ESNext,
-				target: monaco.languages.typescript.ScriptTarget.ESNext,
+				jsx: tsLanguage.JsxEmit.React,
+				moduleResolution: tsLanguage.ModuleResolutionKind.NodeJs,
+				module: tsLanguage.ModuleKind.ESNext,
+				target: tsLanguage.ScriptTarget.ESNext,
 				jsxFactory: 'React.createElement',
 				jsxFragmentFactory: 'React.Fragment',
 			});
 		} else {
 			// Disable expensive features for viewing
-			tsDefaults.setDiagnosticsOptions({
+			tsLanguage.typescriptDefaults.setDiagnosticsOptions({
 				noSemanticValidation: true,
 				noSyntaxValidation: true,
 			});
-			tsDefaults.setCompilerOptions({
-				jsx: monaco.languages.typescript.JsxEmit.React,
-				target: monaco.languages.typescript.ScriptTarget.ESNext,
+			tsLanguage.typescriptDefaults.setCompilerOptions({
+				jsx: tsLanguage.JsxEmit.React,
+				target: tsLanguage.ScriptTarget.ESNext,
 			});
-			jsDefaults.setCompilerOptions({
-				jsx: monaco.languages.typescript.JsxEmit.React,
-				target: monaco.languages.typescript.ScriptTarget.ESNext,
+			tsLanguage.javascriptDefaults.setCompilerOptions({
+				jsx: tsLanguage.JsxEmit.React,
+				target: tsLanguage.ScriptTarget.ESNext,
 			});
 		}
 	}, [shouldEnableTypeScript]);

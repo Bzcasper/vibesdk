@@ -1,217 +1,126 @@
-import { createLogger } from './logger';
-import { isDispatcherAvailable } from './utils/dispatcherUtils';
-import { createApp } from './app';
-// import * as Sentry from '@sentry/cloudflare';
-// import { sentryOptions } from './observability/sentry';
-import { DORateLimitStore as BaseDORateLimitStore } from './services/rate-limit/DORateLimitStore';
-import { getPreviewDomain } from './utils/urls';
-import { proxyToAiGateway } from './services/aigateway-proxy/controller';
-import { isOriginAllowed } from './config/security';
-import { proxyToSandbox } from './services/sandbox/request-handler';
-import { handleGitProtocolRequest, isGitProtocolRequest } from './api/handlers/git-protocol';
-import { getAgentStub } from './agents';
-
-// Durable Object and Service exports
-export { UserAppSandboxService } from './services/sandbox/sandboxSdkClient';
-export { CodeGeneratorAgent } from './agents/core/codingAgent';
-export { UserSecretsStore } from './services/secrets/UserSecretsStore';
-
-// export const CodeGeneratorAgent = Sentry.instrumentDurableObjectWithSentry(sentryOptions, CodeGeneratorAgent);
-// export const DORateLimitStore = Sentry.instrumentDurableObjectWithSentry(sentryOptions, BaseDORateLimitStore);
-export const DORateLimitStore = BaseDORateLimitStore;
-
-// Logger for the main application and handlers
-const logger = createLogger('App');
-
-function setOriginControl(env: Env, request: Request, currentHeaders: Headers): Headers {
-    const origin = request.headers.get('Origin');
-    
-    if (origin && isOriginAllowed(env, origin)) {
-        currentHeaders.set('Access-Control-Allow-Origin', origin);
-    }
-    return currentHeaders;
-}
-
 /**
- * Handles requests for user-deployed applications on subdomains.
- * It first attempts to proxy to a live development sandbox. If that fails,
- * it dispatches the request to a permanently deployed worker via namespaces.
- * This function will NOT fall back to the main worker.
- *
- * @param request The incoming Request object.
- * @param env The environment bindings.
- * @returns A Response object from the sandbox, the dispatched worker, or an error.
+ * Listing Factory — Multi-Platform Listing Automation System
+ * Worker Entry Point
  */
-async function handleUserAppRequest(request: Request, env: Env): Promise<Response> {
-	const url = new URL(request.url);
-	const { hostname } = url;
-	logger.info(`Handling user app request for: ${hostname}`);
 
-	// Check if this is an agent browser file serving request
-	// Pattern: b-{agentid}-{token}.{previewDomain}
-	const subdomain = hostname.split('.')[0];
-	if (subdomain.startsWith('b-')) {
-		// Extract agentId and token from subdomain
-		const withoutPrefix = subdomain.substring(2); // Remove 'b-'
-		const lastHyphenIndex = withoutPrefix.lastIndexOf('-');
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { Env } from "./types/env";
+import { ListingSession } from "./durable-objects/ListingSession";
+import { BrowserSession } from "./durable-objects/BrowserSession";
 
-		if (lastHyphenIndex !== -1) {
-			const agentId = withoutPrefix.substring(0, lastHyphenIndex);
-			logger.info(`Agent browser file serving request for agent: ${agentId}`);
+// Route imports
+import listingsRoutes from "./routes/listings";
+import mediaRoutes from "./routes/media";
+import exportRoutes from "./routes/export";
+import uploadJobsRoutes from "./routes/upload-jobs";
+import socialRoutes from "./routes/social";
+import settingsRoutes from "./routes/settings";
 
-			try {
-				const agentStub = await getAgentStub(env, agentId);
-				return await agentStub.handleBrowserFileServing(request);
-			} catch (error: any) {
-				logger.error(`Error forwarding to agent: ${error.message}`);
-				return new Response('Agent not found', { status: 404 });
-			}
-		}
-	}
+// Export Durable Objects
+export { ListingSession, BrowserSession };
 
-	// 1. Attempt to proxy to a live development sandbox.
-	// proxyToSandbox doesn't consume the request body on a miss, so no clone is needed here.
-	const sandboxResponse = await proxyToSandbox(request, env);
-	if (sandboxResponse) {
-		logger.info(`Serving response from sandbox for: ${hostname}`);
-        // If it was a websocket upgrade, we need to return the response as is
-        if (sandboxResponse.headers.get('Upgrade')?.toLowerCase() === 'websocket') {
-            logger.info(`Serving websocket response from sandbox for: ${hostname}`);
-            return sandboxResponse;
-        }
-		
-		// Add headers to identify this as a sandbox response
-		let headers = new Headers(sandboxResponse.headers);
-		
-        if (sandboxResponse.status === 500) {
-            headers.set('X-Preview-Type', 'sandbox-error');
-        } else {
-            headers.set('X-Preview-Type', 'sandbox');
-        }
-        headers = setOriginControl(env, request, headers);
-        headers.append('Vary', 'Origin');
-		headers.set('Access-Control-Expose-Headers', 'X-Preview-Type');
-		
-		return new Response(sandboxResponse.body, {
-			status: sandboxResponse.status,
-			statusText: sandboxResponse.statusText,
-			headers,
-		});
-	}
+// Create Hono app
+const app = new Hono<{ Bindings: Env }>();
 
-	// 2. If sandbox misses, attempt to dispatch to a deployed worker.
-	logger.info(`Sandbox miss for ${hostname}, attempting dispatch to permanent worker.`);
-	if (!isDispatcherAvailable(env)) {
-		logger.warn(`Dispatcher not available, cannot serve: ${hostname}`);
-		return new Response('This application is not currently available.', { status: 404 });
-	}
+// Global Middleware
+app.use("/*", cors());
 
-	// Extract the app name (e.g., "xyz" from "xyz.build.cloudflare.dev").
-	const appName = subdomain;
-	const dispatcher = env['DISPATCHER'];
+// API Routes
+app.route("/api/listings", listingsRoutes);
+app.route("/api/media", mediaRoutes);
+app.route("/api/export", exportRoutes);
+app.route("/api/upload-jobs", uploadJobsRoutes);
+app.route("/api/social", socialRoutes);
+app.route("/api/settings", settingsRoutes);
 
+// ListingSession WebSocket - delegate to Durable Object
+app.get("/api/session/:id", async (c) => {
+	const id = c.req.param("id");
+	const doId = c.env.LISTING_SESSION.idFromName(id);
+	const stub = c.env.LISTING_SESSION.get(doId);
+	c.executionCtx.waitUntil(stub.fetch(c.req.raw as any));
+});
+
+// BrowserSession WebSocket - delegate to Durable Object
+app.get("/api/browser/:id", async (c) => {
+	const id = c.req.param("id");
+	const doId = c.env.BROWSER_SESSION.idFromName(id);
+	const stub = c.env.BROWSER_SESSION.get(doId);
+	c.executionCtx.waitUntil(stub.fetch(c.req.raw as any));
+});
+
+// API 404
+app.all("/api/*", (c) => {
+	return c.json({ success: false, error: "Not found" }, 404);
+});
+
+// SPA Fallback - serve from R2 or return placeholder
+app.get("*", async (c) => {
+	// Try to serve from R2
 	try {
-		const worker = dispatcher.get(appName);
-		const dispatcherResponse = await worker.fetch(request);
+		const url = new URL(c.req.url);
+		const path = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
+		const asset = await c.env.R2_PROD.get(`dist/${path}`);
 
-		// Add headers to identify this as a dispatcher response
-		let headers = new Headers(dispatcherResponse.headers);
-
-		headers.set('X-Preview-Type', 'dispatcher');
-        headers = setOriginControl(env, request, headers);
-        headers.append('Vary', 'Origin');
-		headers.set('Access-Control-Expose-Headers', 'X-Preview-Type');
-
-		return new Response(dispatcherResponse.body, {
-			status: dispatcherResponse.status,
-			statusText: dispatcherResponse.statusText,
-			headers,
-		});
-	} catch (error: any) {
-		// This block catches errors if the binding doesn't exist or if worker.fetch() fails.
-		logger.warn(`Error dispatching to worker '${appName}': ${error.message}`);
-
-		return new Response('An error occurred while loading this application.', { status: 500 });
+		if (asset) {
+			const contentType = getContentType(path);
+			return new Response(asset.body as any, {
+				headers: { "Content-Type": contentType },
+			});
+		}
+	} catch {
+		// Fall through to index.html
 	}
+
+	// Return index.html for client-side routing
+	try {
+		const indexHtml = await c.env.R2_PROD.get("dist/index.html");
+		if (indexHtml) {
+			return new Response(indexHtml.body as any, {
+				headers: { "Content-Type": "text/html" },
+			});
+		}
+	} catch {
+		// Fall through
+	}
+
+	// Development placeholder
+	return c.html(`
+		<!DOCTYPE html>
+		<html>
+		<head><title>Listing Factory</title></head>
+		<body>
+			<h1>Listing Factory</h1>
+			<p>Multi-Platform Listing Automation System</p>
+			<p>Build and deploy the frontend to see the full UI.</p>
+		</body>
+		</html>
+	`);
+});
+
+// Scheduled Handler
+export const scheduled = async (event: ScheduledEvent, env: Env, ctx: ExecutionContext) => {
+	console.log("Scheduled task:", event.cron);
+	// TODO: Implement scheduled tasks
+};
+
+// Content type helper
+function getContentType(path: string): string {
+	const ext = path.split(".").pop()?.toLowerCase();
+	const types: Record<string, string> = {
+		html: "text/html",
+		css: "text/css",
+		js: "application/javascript",
+		json: "application/json",
+		png: "image/png",
+		jpg: "image/jpeg",
+		svg: "image/svg+xml",
+		ico: "image/x-icon",
+		woff: "font/woff",
+		woff2: "font/woff2",
+	};
+	return types[ext || ""] || "application/octet-stream";
 }
 
-/**
- * Main Worker fetch handler with robust, secure routing.
- */
-const worker = {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-        // logger.info(`Received request: ${request.method} ${request.url}`);
-		// --- Pre-flight Checks ---
-
-		// 1. Critical configuration check: Ensure custom domain is set.
-        const previewDomain = getPreviewDomain(env);
-		if (!previewDomain || previewDomain.trim() === '') {
-			logger.error('FATAL: env.CUSTOM_DOMAIN is not configured in wrangler.toml or the Cloudflare dashboard.');
-			return new Response('Server configuration error: Application domain is not set.', { status: 500 });
-		}
-
-		const url = new URL(request.url);
-		const { hostname, pathname } = url;
-
-		// 2. Security: Immediately reject any requests made via an IP address.
-		const ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
-		if (ipRegex.test(hostname)) {
-			return new Response('Access denied. Please use the assigned domain name.', { status: 403 });
-		}
-
-		// --- Domain-based Routing ---
-
-		// Normalize hostnames for both local development (localhost) and production.
-		const isMainDomainRequest =
-			hostname === env.CUSTOM_DOMAIN || hostname === 'localhost';
-		const isSubdomainRequest =
-			hostname.endsWith(`.${previewDomain}`) ||
-			(hostname.endsWith('.localhost') && hostname !== 'localhost');
-
-		// Route 1: Main Platform Request (e.g., build.cloudflare.dev or localhost)
-		if (isMainDomainRequest) {
-			// Handle Git protocol endpoints directly
-			// Route: /apps/:id.git/info/refs or /apps/:id.git/git-upload-pack
-			if (isGitProtocolRequest(pathname)) {
-				return handleGitProtocolRequest(request, env, ctx);
-			}
-
-			// Serve static assets for all non-API routes from the ASSETS binding.
-			if (!pathname.startsWith('/api/')) {
-				return env.ASSETS.fetch(request);
-			}
-			// AI Gateway proxy for generated apps
-			if (pathname.startsWith('/api/proxy/openai')) {
-                // Only handle requests from valid origins of the preview domain
-                const origin = request.headers.get('Origin');
-                const previewDomain = getPreviewDomain(env);
-
-                logger.info(`Origin: ${origin}, Preview Domain: ${previewDomain}`);
-
-                return proxyToAiGateway(request, env, ctx);
-				// if (origin && origin.endsWith(`.${previewDomain}`)) {
-                //     return proxyToAiGateway(request, env, ctx);
-                // }
-                // logger.warn(`Access denied. Invalid origin: ${origin}, preview domain: ${previewDomain}`);
-                // return new Response('Access denied. Invalid origin.', { status: 403 });
-			}
-
-			// Handle all API requests with the main Hono application.
-			logger.info(`Handling API request for: ${url}`);
-			const app = createApp(env);
-			return app.fetch(request, env, ctx);
-		}
-
-		// Route 2: User App Request (e.g., xyz.build.cloudflare.dev or test.localhost)
-		if (isSubdomainRequest) {
-			return handleUserAppRequest(request, env);
-		}
-
-		return new Response('Not Found', { status: 404 });
-	},
-} satisfies ExportedHandler<Env>;
-
-export default worker;
-
-// Wrap the entire worker with Sentry for comprehensive error monitoring.
-// export default Sentry.withSentry(sentryOptions, worker);
+export default app;

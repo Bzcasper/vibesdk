@@ -1,27 +1,29 @@
-import { createRoot } from 'react-dom/client';
-import { createBrowserRouter } from 'react-router';
-import { RouterProvider } from 'react-router/dom';
-import { initSentry } from './utils/sentry';
+/**
+ * Caspers Jewelry — React SPA Entry Point
+ */
 
-import { routes } from './routes.ts';
-import './index.css';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import App from './app/root';
+import './app/styles/globals.css';
 
-// Initialize Sentry before rendering
-initSentry();
-
-// Type for React Router hydration data  
-import type { RouterState } from 'react-router';
-
-declare global {
-  interface Window {
-    __staticRouterHydrationData?: Partial<Pick<RouterState, 'loaderData' | 'actionData' | 'errors'>>;
-  }
-}
-
-const router = createBrowserRouter(routes, {
-	hydrationData: window.__staticRouterHydrationData,
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
 });
 
-createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router} />
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
 );

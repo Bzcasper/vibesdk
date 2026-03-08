@@ -1,5 +1,13 @@
-import type { RateLimitError } from "worker/services/rate-limit/errors";
-import type { RateLimitType } from "worker/services/rate-limit/config";
+// Rate limit types (stubbed - not available in worker directory)
+type RateLimitType = 'api_calls' | 'auth_attempts' | 'email_sends' | string;
+
+interface RateLimitError {
+  message: string;
+  limitType: RateLimitType;
+  limit?: number;
+  period?: number;
+  suggestions?: string[];
+}
 
 /**
  * Security error types for proper error handling

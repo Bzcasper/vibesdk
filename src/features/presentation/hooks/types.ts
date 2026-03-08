@@ -7,6 +7,8 @@ export interface SlideInfo {
 	filePath: string;
 }
 
+export type FileObject = FileType;
+
 export interface PresentationPreviewProps {
 	previewUrl: string;
 	className?: string;

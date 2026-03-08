@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useNavigate } from 'react-router';
 import { apiClient, ApiError } from '@/lib/api-client';
 import { useSentryUser } from '@/hooks/useSentryUser';
-import type { AuthSession, AuthUser } from '../api-types';
+import type { AuthSession, AuthUser } from '@/api-types';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -99,9 +99,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await apiClient.getAuthProviders();
       if (response.success && response.data) {
-        setAuthProviders(response.data.providers);
-        setHasOAuth(response.data.hasOAuth);
-        setRequiresEmailAuth(response.data.requiresEmailAuth);
+        // Parse providers array into provider booleans
+        const providerMap = { google: false, github: false, email: false };
+        response.data.providers.forEach(provider => {
+          if (provider === 'google' || provider === 'github') {
+            providerMap[provider] = true;
+          }
+        });
+        
+        setAuthProviders(providerMap);
+        setHasOAuth(response.data.hasOAuth ?? false);
+        setRequiresEmailAuth(response.data.requiresEmailAuth ?? false);
       }
     } catch (error) {
       console.warn('Failed to fetch auth providers:', error);
@@ -148,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession({
           userId: response.data.user.id,
           email: response.data.user.email,
-          sessionId: response.data.sessionId || response.data.user.id,
+          sessionId: response.data.user.id,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours expiry
         });
         
@@ -215,8 +223,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession({
           userId: response.data.user.id,
           email: response.data.user.email,
-          sessionId: response.data.sessionId,
-          expiresAt: response.data.expiresAt,
+          sessionId: response.data.session.sessionId,
+          expiresAt: response.data.session.expiresAt,
         });
         setupTokenRefresh();
         
@@ -253,8 +261,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession({
           userId: response.data.user.id,
           email: response.data.user.email,
-          sessionId: response.data.sessionId,
-          expiresAt: response.data.expiresAt,
+          sessionId: response.data.session.sessionId,
+          expiresAt: response.data.session.expiresAt,
         });
         setupTokenRefresh();
         

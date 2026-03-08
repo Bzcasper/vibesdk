@@ -6,7 +6,7 @@ import type {
     AuthUser,
     GitHubExportOptions,
     GitHubExportResult
-} from '../api-types';
+} from '@/api-types';
 import type { WebSocketMessageData } from '@/api-types';
 
 // Use existing backend WebSocket types
