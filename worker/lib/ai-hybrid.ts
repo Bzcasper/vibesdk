@@ -86,7 +86,7 @@ export class HybridAIPipeline {
 		if (this.geminiPipeline && this.preferredProvider === "gemini") {
 			try {
 				console.log(
-					"[HybridAI] Using Google Gemini Flash 1.5 (best vision)",
+					"[HybridAI] Using Google Gemini Flash 3.1 Lite (best vision)",
 				);
 				console.log(
 					"[HybridAI] Gemini pipeline exists:",
