@@ -49,6 +49,12 @@ export default function Enricher() {
 				body: formData,
 			});
 
+
+                        if (!response.ok) {
+                                const text = await response.text();
+                                throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                        }
+
 			const data = await response.json() as any;
 			setEnrichmentResult(data.data);
 		} catch (error) {

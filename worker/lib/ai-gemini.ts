@@ -46,7 +46,7 @@ export interface EnrichedListing {
 export class GeminiAIPipeline {
 	private apiKey: string;
 	private baseUrl = "https://generativelanguage.googleapis.com/v1beta/models";
-	private model = "gemini-3.1-flash-lite-preview";
+	private model = "gemini-1.5-flash-latest";
 
 	constructor(apiKey: string) {
 		if (!apiKey) throw new Error("GOOGLE_AI_API_KEY not set");

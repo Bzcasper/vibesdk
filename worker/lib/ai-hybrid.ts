@@ -34,8 +34,7 @@ export class HybridAIPipeline {
 				this.geminiPipeline = new GeminiAIPipeline(
 					env.GOOGLE_AI_API_KEY,
 				);
-				// TEMP: Test Grok first
-				// this.preferredProvider = "gemini";
+				this.preferredProvider = "gemini";
 				console.log("[HybridAI] Gemini configured");
 			} catch (error) {
 				console.warn("[HybridAI] Gemini initialization failed:", error);
@@ -46,11 +45,10 @@ export class HybridAIPipeline {
 		if (env.GROK_API_KEY) {
 			try {
 				this.grokPipeline = new GrokAIPipeline(env.GROK_API_KEY);
-				// Gemini is faster and primary
-				this.preferredProvider = "gemini";
-				console.log(
-					"[HybridAI] Grok configured as PRIMARY for testing",
-				);
+				if (!this.geminiPipeline) {
+					this.preferredProvider = "grok";
+				}
+				console.log("[HybridAI] Grok configured");
 			} catch (error) {
 				console.warn("[HybridAI] Grok initialization failed:", error);
 			}
@@ -88,7 +86,7 @@ export class HybridAIPipeline {
 		if (this.geminiPipeline && this.preferredProvider === "gemini") {
 			try {
 				console.log(
-					"[HybridAI] Using Google Gemini Flash 3.1 (best vision)",
+					"[HybridAI] Using Google Gemini Flash 1.5 (best vision)",
 				);
 				console.log(
 					"[HybridAI] Gemini pipeline exists:",
