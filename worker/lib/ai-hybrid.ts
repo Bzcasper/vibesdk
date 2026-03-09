@@ -1,6 +1,6 @@
 /**
  * Hybrid AI Pipeline
- * Supports Gemini (best), Grok, OpenAI Gateway (BYOK), and Cloudflare Models
+ * Supports Grok (best vision), Gemini, OpenAI Gateway (BYOK), and Cloudflare Models
  * Falls back gracefully between implementations
  */
 
@@ -28,29 +28,29 @@ export class HybridAIPipeline {
 		"cloudflare";
 
 	constructor(private env: Env) {
-		// Check if Google Gemini is configured (highest priority)
+		// Check if Grok is configured (PRIMARY priority)
+		if (env.GROK_API_KEY) {
+			try {
+				this.grokPipeline = new GrokAIPipeline(env.GROK_API_KEY);
+				this.preferredProvider = "grok";
+				console.log("[HybridAI] Grok configured as PRIMARY provider");
+			} catch (error) {
+				console.warn("[HybridAI] Grok initialization failed:", error);
+			}
+		}
+
+		// Check if Google Gemini is configured (Secondary priority)
 		if (env.GOOGLE_AI_API_KEY) {
 			try {
 				this.geminiPipeline = new GeminiAIPipeline(
 					env.GOOGLE_AI_API_KEY,
 				);
-				this.preferredProvider = "gemini";
-				console.log("[HybridAI] Gemini configured");
+				if (!this.grokPipeline) {
+					this.preferredProvider = "gemini";
+				}
+				console.log("[HybridAI] Gemini configured as secondary provider");
 			} catch (error) {
 				console.warn("[HybridAI] Gemini initialization failed:", error);
-			}
-		}
-
-		// Check if Grok is configured (second priority)
-		if (env.GROK_API_KEY) {
-			try {
-				this.grokPipeline = new GrokAIPipeline(env.GROK_API_KEY);
-				if (!this.geminiPipeline) {
-					this.preferredProvider = "grok";
-				}
-				console.log("[HybridAI] Grok configured");
-			} catch (error) {
-				console.warn("[HybridAI] Grok initialization failed:", error);
 			}
 		}
 
@@ -76,21 +76,34 @@ export class HybridAIPipeline {
 	}
 
 	/**
-	 * Enrich from base64 image (try Gemini → OpenAI → Cloudflare)
+	 * Enrich from base64 image (try Grok → Gemini → OpenAI → Cloudflare)
 	 */
 	async enrichFromImage(
 		imageBase64: string,
 		mimeType: string = "image/jpeg",
 	): Promise<EnrichedListing> {
-		// Try Gemini first if configured (best vision)
-		if (this.geminiPipeline && this.preferredProvider === "gemini") {
+		// Try Grok first if configured (requested primary)
+		if (this.grokPipeline && this.preferredProvider === "grok") {
+			try {
+				console.log("[HybridAI] Using Grok 4.20 Beta (primary vision)");
+				const result = await this.grokPipeline.enrichFromImage(
+					imageBase64,
+					mimeType,
+				);
+				return {
+					...result,
+					provider: "grok",
+				};
+			} catch (error) {
+				console.warn("[HybridAI] Grok failed, falling back to Gemini:", error);
+			}
+		}
+
+		// Try Gemini second if configured
+		if (this.geminiPipeline) {
 			try {
 				console.log(
-					"[HybridAI] Using Google Gemini Flash 3.1 Lite (best vision)",
-				);
-				console.log(
-					"[HybridAI] Gemini pipeline exists:",
-					!!this.geminiPipeline,
+					"[HybridAI] Using Google Gemini Flash 3.1 Lite (secondary vision)",
 				);
 				const result = await this.geminiPipeline.enrichFromImage(
 					imageBase64,
@@ -101,25 +114,7 @@ export class HybridAIPipeline {
 					provider: "gemini",
 				};
 			} catch (error) {
-				console.error("[HybridAI] Gemini failed with error:", error);
-				console.warn("[HybridAI] Gemini failed, falling back:", error);
-			}
-		}
-
-		// Try Grok second if configured
-		if (this.grokPipeline) {
-			try {
-				console.log("[HybridAI] Using Grok 4.20 Beta (vision)");
-				const result = await this.grokPipeline.enrichFromImage(
-					imageBase64,
-					mimeType,
-				);
-				return {
-					...result,
-					provider: "grok",
-				};
-			} catch (error) {
-				console.warn("[HybridAI] Grok failed, falling back:", error);
+				console.warn("[HybridAI] Gemini failed, falling back to OpenAI:", error);
 			}
 		}
 
@@ -136,7 +131,7 @@ export class HybridAIPipeline {
 					provider: "openai-gateway",
 				};
 			} catch (error) {
-				console.warn("[HybridAI] BYOK failed, falling back:", error);
+				console.warn("[HybridAI] BYOK failed, falling back to Cloudflare:", error);
 			}
 		}
 
