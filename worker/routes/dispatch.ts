@@ -8,6 +8,7 @@ import { Env } from "../types/env";
 import { dispatchToAllPlatforms, DispatchRequest } from "../agents/dispatch";
 import { getListingById } from "../db/listings";
 import { PlatformName } from "../../src/api-types";
+import { withRetry, TimeoutError } from "../lib/sdk-utils";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -25,39 +26,57 @@ app.post("/publish", async (c) => {
 		if (!listing_id || !platforms || platforms.length === 0) {
 			return c.json(
 				{ success: false, error: "listing_id and platforms required" },
-				400
+				400,
 			);
 		}
 
 		// Get listing from DB
 		const listing = await getListingById(c.env.DB, listing_id);
 		if (!listing) {
-			return c.json(
-				{ success: false, error: "Listing not found" },
-				404
-			);
+			return c.json({ success: false, error: "Listing not found" }, 404);
 		}
 
 		// TODO: Get media assets for listing
-		const images: Array<{ r2_key: string; position: number; is_primary: boolean }> = [];
+		const images: Array<{
+			r2_key: string;
+			position: number;
+			is_primary: boolean;
+		}> = [];
 
-		// Dispatch to platforms
+		// Build dispatch request
 		const dispatchRequest: DispatchRequest = {
 			listing_id,
 			platforms,
-			listing: listing as any, // Type casting for now
+			listing: listing as any,
 			images,
 		};
 
-		const results = await dispatchToAllPlatforms(
-			dispatchRequest,
-			c.env.DB,
-			{
-				dispatch: c.env.JOBS_QUEUE,
-				media: c.env.JOBS_QUEUE,
-				social: c.env.JOBS_QUEUE,
-			}
-		);
+		// Dispatch to platforms with retry
+		let results;
+		try {
+			results = await withRetry(
+				() =>
+					dispatchToAllPlatforms(dispatchRequest, c.env.DB, {
+						dispatch: c.env.JOBS_QUEUE,
+						media: c.env.JOBS_QUEUE,
+						social: c.env.JOBS_QUEUE,
+					}),
+				{
+					maxRetries: 3,
+					initialDelayMs: 1000,
+					maxDelayMs: 5000,
+				},
+			);
+		} catch (error) {
+			console.error("[Dispatch] All retries failed:", error);
+			return c.json(
+				{
+					success: false,
+					error: "Dispatch failed after retries. Please try again.",
+				},
+				503,
+			);
+		}
 
 		return c.json(
 			{
@@ -65,17 +84,15 @@ app.post("/publish", async (c) => {
 				data: {
 					listing_id,
 					results,
-					queued_count: results.filter((r) => r.status === "queued").length,
+					queued_count: results.filter((r) => r.status === "queued")
+						.length,
 				},
 			},
-			202 // Accepted - jobs queued
+			202, // Accepted - jobs queued
 		);
 	} catch (error) {
 		console.error("Dispatch error:", error);
-		return c.json(
-			{ success: false, error: (error as Error).message },
-			500
-		);
+		return c.json({ success: false, error: (error as Error).message }, 500);
 	}
 });
 
@@ -103,10 +120,7 @@ app.get("/status/:listing_id", async (c) => {
 
 		return c.json({ success: true, data: status });
 	} catch (error) {
-		return c.json(
-			{ success: false, error: (error as Error).message },
-			500
-		);
+		return c.json({ success: false, error: (error as Error).message }, 500);
 	}
 });
 

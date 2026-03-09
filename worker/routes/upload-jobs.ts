@@ -74,7 +74,7 @@ app.get("/:id/ws", async (c) => {
 	const stub = c.env.BROWSER_SESSION.get(doId);
 
 	// Forward the upgrade request to the DO
-	c.executionCtx.waitUntil(stub.fetch(c.req.raw as any));
+	return stub.fetch(c.req.raw as any);
 });
 
 export default app;

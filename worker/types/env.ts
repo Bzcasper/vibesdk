@@ -21,6 +21,7 @@ export interface Env {
 	TOKENS: KVNamespace;
 	BROWSER_CACHE: KVNamespace;
 	RATELIMIT: KVNamespace;
+	ASSETS: { fetch: typeof fetch };
 
 	// Queues
 	JOBS_QUEUE: Queue;
@@ -32,12 +33,14 @@ export interface Env {
 	// AI
 	AI: Ai;
 	AI_GATEWAY_URL: string;
+	GOOGLE_AI_API_KEY?: string; // Google AI Studio API key (optional)
+	GROK_API_KEY?: string; // Grok Vision API key (optional)
 
 	// Security
 	ENCRYPTION_KEY: string; // 64 hex chars (32 bytes) for token vault
 
 	// Environment
-	ENVIRONMENT: 'development' | 'staging' | 'production';
+	ENVIRONMENT: "development" | "staging" | "production";
 	STORE_NAME: string;
 	DEFAULT_MARKETPLACE: string;
 	DEFAULT_CURRENCY: string;

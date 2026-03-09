@@ -9,6 +9,11 @@
 	"compatibility_date": "2024-09-23",
 	"compatibility_flags": ["nodejs_compat"],
 
+	"assets": {
+		"directory": "./src/dist",
+		"binding": "ASSETS"
+	},
+
 	"durable_objects": {
 		"bindings": [
 			{ "name": "LISTING_SESSION", "class_name": "ListingSession" },
