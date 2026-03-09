@@ -11,10 +11,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 
 // Pages (lazy loaded)
-const Dashboard = React.lazy(() => import('./routes/dashboard'));
-const NewListing = React.lazy(() => import('./routes/new-listing'));
+const Dashboard = React.lazy(() => import('./routes/Dashboard'));
+const NewListing = React.lazy(() => import('./routes/NewListing'));
 const ListingDetail = React.lazy(() => import('./routes/listing.$id'));
-const Inventory = React.lazy(() => import('./routes/inventory'));
+const Inventory = React.lazy(() => import('./routes/Inventory'));
 const CsvBatches = React.lazy(() => import('./routes/csv-batches'));
 const Platforms = React.lazy(() => import('./routes/platforms'));
 const Settings = React.lazy(() => import('./routes/settings'));

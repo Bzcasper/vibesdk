@@ -11,22 +11,30 @@ export interface Env {
 	// Durable Objects
 	LISTING_SESSION: DurableObjectNamespace;
 	BROWSER_SESSION: DurableObjectNamespace;
-	USER_SECRETS_STORE: DurableObjectNamespace;
 
 	// Storage
 	DB: D1Database;
 	R2_PROD: R2Bucket;
 	R2_DEV: R2Bucket;
-	KV_CONFIG: KVNamespace;
-	KV_SESSIONS: KVNamespace;
+	MEDIA: R2Bucket;
+	CONFIG: KVNamespace;
+	TOKENS: KVNamespace;
+	BROWSER_CACHE: KVNamespace;
+	RATELIMIT: KVNamespace;
 
 	// Queues
-	QUEUE_BROWSER: Queue;
-	QUEUE_SOCIAL: Queue;
+	JOBS_QUEUE: Queue;
+	DISPATCH_QUEUE?: Queue;
+	MEDIA_QUEUE?: Queue;
+	SOCIAL_QUEUE?: Queue;
+	SYNC_QUEUE?: Queue;
 
 	// AI
 	AI: Ai;
 	AI_GATEWAY_URL: string;
+
+	// Security
+	ENCRYPTION_KEY: string; // 64 hex chars (32 bytes) for token vault
 
 	// Environment
 	ENVIRONMENT: 'development' | 'staging' | 'production';
@@ -36,10 +44,16 @@ export interface Env {
 
 	// Platform Credentials (optional)
 	EBAY_STORE_NAME?: string;
+	EBAY_OAUTH_CLIENT_ID?: string;
+	EBAY_OAUTH_CLIENT_SECRET?: string;
 	SHOPIFY_SHOP_DOMAIN?: string;
 	SHOPIFY_ACCESS_TOKEN?: string;
 	ETSY_KEYSTRING?: string;
 	ETSY_SHARED_SECRET?: string;
+	ETSY_OAUTH_CLIENT_ID?: string;
+	ETSY_OAUTH_CLIENT_SECRET?: string;
+	TIKTOK_CLIENT_ID?: string;
+	TIKTOK_CLIENT_SECRET?: string;
 	PINTEREST_APP_ID?: string;
 	PINTEREST_APP_SECRET?: string;
 	FACEBOOK_APP_ID?: string;
@@ -49,6 +63,7 @@ export interface Env {
 export enum ListingStatus {
 	DRAFT = "draft",
 	ENRICHING = "enriching",
+	PROCESSING = "processing",
 	READY = "ready",
 	EXPORTING = "exporting",
 	PUBLISHED = "published",

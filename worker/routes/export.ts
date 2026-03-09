@@ -5,8 +5,7 @@
 
 import { Hono } from "hono";
 import { Env } from "../types/env";
-import { createCSVExport, getCSVExportById, updateCSVExport, listListingsByStatus } from "../db/listings";
-import { ListingStatus } from "../types/env";
+import { createCSVExport, getCSVExportById } from "../db/listings";
 
 const app = new Hono<{ Bindings: Env }>();
 

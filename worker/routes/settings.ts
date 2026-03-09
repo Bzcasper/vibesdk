@@ -26,7 +26,7 @@ app.put("/", async (c) => {
 		const updates = await c.req.json();
 
 		// Store in KV
-		await c.env.KV_CONFIG.put("user_settings", JSON.stringify(updates));
+		await c.env.CONFIG.put("user_settings", JSON.stringify(updates));
 
 		return c.json({ success: true, data: updates });
 	} catch (error) {

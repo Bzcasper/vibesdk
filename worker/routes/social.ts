@@ -4,7 +4,7 @@
  */
 
 import { Hono } from "hono";
-import { Env, SocialPlatform } from "../types/env";
+import { Env } from "../types/env";
 import { getListingById, getListingFields, getMediaAssetsByListing } from "../db/listings";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -12,7 +12,7 @@ const app = new Hono<{ Bindings: Env }>();
 // Get social content for a listing
 app.get("/listing/:listingId", async (c) => {
 	const listingId = c.req.param("listingId");
-	const platform = c.req.query("platform") as SocialPlatform | null;
+
 
 	const listing = await getListingById(c.env.DB, listingId);
 	if (!listing) {

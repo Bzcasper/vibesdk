@@ -13,12 +13,21 @@ const app = new Hono<{ Bindings: Env }>();
 app.post("/", async (c) => {
 	try {
 		const formData = await c.req.formData();
-		const file = formData.get("file") as File;
+		const fileEntry = formData.get("file");
 		const listingId = formData.get("listingId") as string;
 
-		if (!file || !listingId) {
+		if (!fileEntry || typeof fileEntry === "string" || !listingId) {
 			return c.json({ success: false, error: "File and listingId required" }, 400);
 		}
+
+		// Treat as File-like object from FormData
+		interface FileObject {
+			name: string;
+			type: string;
+			size: number;
+			arrayBuffer: () => Promise<ArrayBuffer>;
+		}
+		const file = fileEntry as FileObject;
 
 		// Generate R2 key
 		const ext = file.name.split(".").pop() || "bin";

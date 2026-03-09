@@ -12,50 +12,80 @@
 	"durable_objects": {
 		"bindings": [
 			{ "name": "LISTING_SESSION", "class_name": "ListingSession" },
-			{ "name": "BROWSER_SESSION", "class_name": "BrowserSession" },
-		],
+			{ "name": "BROWSER_SESSION", "class_name": "BrowserSession" }
+		]
 	},
+
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["ListingSession", "BrowserSession"]
+		}
+	],
 
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "listing-factory-db",
-			"database_id": "<DATABASE_ID>",
-			"migrations_dir": "migrations",
-		},
+			"database_id": "394b4ecb-e3bd-4950-ada7-4de0c36afe9a",
+			"migrations_dir": "migrations"
+		}
 	],
 
 	"r2_buckets": [
-		{ "binding": "R2_PROD", "bucket_name": "listing-factory-prod" },
-		{ "binding": "R2_DEV", "bucket_name": "listing-factory-dev" },
+		{
+			"binding": "MEDIA",
+			"bucket_name": "listing-factory-media"
+		},
+		{
+			"binding": "R2_PROD",
+			"bucket_name": "listing-factory-prod"
+		},
+		{
+			"binding": "R2_DEV",
+			"bucket_name": "listing-factory-dev"
+		}
 	],
 
 	"kv_namespaces": [
-		{ "binding": "KV_CONFIG", "id": "<KV_CONFIG_ID>" },
-		{ "binding": "KV_SESSIONS", "id": "<KV_SESSIONS_ID>" },
+		{
+			"binding": "CONFIG",
+			"id": "c011ccde164f43888c35d83b965a7067"
+		},
+		{
+			"binding": "TOKENS",
+			"id": "0c04e270e21d46c0a65c8e6632c23c73"
+		},
+		{
+			"binding": "BROWSER_CACHE",
+			"id": "7cb8223d6c0d4b238be22f3a7a0e4c52"
+		},
+		{
+			"binding": "RATELIMIT",
+			"id": "036ace21b570443eb64517935b3cd04d"
+		}
 	],
 
 	"queues": {
 		"producers": [
-			{ "binding": "QUEUE_BROWSER", "queue": "browser-jobs" },
-			{ "binding": "QUEUE_SOCIAL", "queue": "social-jobs" },
+			{ "binding": "JOBS_QUEUE", "queue": "zai-jobs" }
 		],
 		"consumers": [
 			{
-				"queue": "browser-jobs",
-				"max_batch_size": 1,
-			},
-			{
-				"queue": "social-jobs",
-				"max_batch_size": 5,
-			},
-		],
+				"queue": "zai-jobs",
+				"max_batch_size": 5
+			}
+		]
 	},
 
 	"ai": { "binding": "AI" },
 	"browser": { "binding": "BROWSER" },
 
 	"vars": {
-		"ENVIRONMENT": "development",
-	},
+		"ENVIRONMENT": "production",
+		"STORE_NAME": "Caspers Jewelry",
+		"DEFAULT_MARKETPLACE": "EBAY_US",
+		"DEFAULT_CURRENCY": "USD",
+		"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/56f4998a06a2b93036116ca4df2db7fb/caspers-jewelry/openai"
+	}
 }

@@ -280,7 +280,7 @@ export class ListingSession extends DurableObject<Env> {
 	// WebSocket Handling
 	// ============================================================
 
-	private async handleWebSocketUpgrade(request: Request): Promise<Response> {
+	private async handleWebSocketUpgrade(_request: Request): Promise<Response> {
 		const pair = new WebSocketPair();
 		const [client, server] = Object.values(pair) as [WebSocket, WebSocketWithExtensions];
 

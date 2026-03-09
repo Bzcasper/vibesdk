@@ -83,6 +83,7 @@ max_batch_size = 10
 max_batch_timeout = 30
 max_retries = 5
 dead_letter_queue = "dispatch-dead-letter"
+handler = "dispatchQueueConsumer"
 
 # Media processing queue (image pipeline)
 [[queues.producers]]
@@ -94,6 +95,7 @@ queue = "media-queue"
 max_batch_size = 5
 max_batch_timeout = 60
 max_retries = 3
+handler = "mediaQueueConsumer"
 
 # Sync check queue (periodic listing health)
 [[queues.producers]]
@@ -105,6 +107,19 @@ queue = "sync-queue"
 max_batch_size = 20
 max_batch_timeout = 60
 max_retries = 3
+handler = "syncQueueConsumer"
+
+# Social content generation queue
+[[queues.producers]]
+binding = "SOCIAL_QUEUE"
+queue = "social-queue"
+
+[[queues.consumers]]
+queue = "social-queue"
+max_batch_size = 5
+max_batch_timeout = 30
+max_retries = 3
+handler = "socialQueueConsumer"
 
 # ============================================================
 # WORKERS AI

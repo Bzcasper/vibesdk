@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { Env } from "../types/env";
-import { createUploadJob, getUploadJobById, updateUploadJob, getCSVExportById } from "../db/listings";
+import { createUploadJob, getUploadJobById, getCSVExportById } from "../db/listings";
 
 const app = new Hono<{ Bindings: Env }>();
 

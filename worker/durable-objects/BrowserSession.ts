@@ -149,7 +149,7 @@ export class BrowserSession extends DurableObject<Env> {
 	// Browser Job Execution
 	// ============================================================
 
-	private async runJob(csvR2Key: string): Promise<void> {
+	private async runJob(_csvR2Key: string): Promise<void> {
 		try {
 			// Step 1: Launch browser
 			await this.setStep("launching_browser");

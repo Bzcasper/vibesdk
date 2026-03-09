@@ -1,0 +1,61 @@
+{
+  "phase": 4,
+  "name": "Media Pipeline & GUI Polish",
+  "status": "planned",
+  "objectives": [
+    "Image processing pipeline with free models (cf/bria/rmbg for backgrounds)",
+    "Platform-specific image sizing (eBay, Shopify, Etsy standards)",
+    "React dashboard UI for listing creation and management",
+    "Real-time upload progress tracking via WebSocket",
+    "CSV batch preview and validation UI"
+  ],
+  "files_to_create": [
+    {
+      "path": "worker/agents/media/processor.ts",
+      "description": "Image processing pipeline - resize, optimize, format conversion"
+    },
+    {
+      "path": "worker/agents/media/bg-remover.ts",
+      "description": "Background removal using @cf/bria/rmbg model"
+    },
+    {
+      "path": "src/pages/Dashboard.tsx",
+      "description": "Main dashboard with listing stats, recent uploads, quick actions"
+    },
+    {
+      "path": "src/pages/NewListing.tsx",
+      "description": "Multi-step listing creation form with AI enrichment preview"
+    },
+    {
+      "path": "src/components/ImageUploadZone.tsx",
+      "description": "Drag-drop image upload with progress and preview"
+    },
+    {
+      "path": "src/components/ListingPreview.tsx",
+      "description": "Platform-specific preview (eBay, Shopify, etc)"
+    },
+    {
+      "path": "src/hooks/useListingSession.ts",
+      "description": "WebSocket hook for real-time listing enrichment updates"
+    }
+  ],
+  "platforms_needing_ui": [
+    "eBay (CSV batch, condition mapping, category suggestions)",
+    "Shopify (variant management, collections)",
+    "Etsy (tags, shop sections, listing features)",
+    "Facebook (marketplace photo requirements)",
+    "TikTok (short video templates)"
+  ],
+  "free_api_candidates": [
+    "Cloudflare Workers AI - image processing (@cf/bria/rmbg)",
+    "Llama 3.3 for content generation (already in use)",
+    "Image APIs: libvips via wasm or sharp (self-hosted)"
+  ],
+  "dependencies_to_add": [
+    "@react-dropzone/react-dropzone - file upload UX",
+    "zustand - lightweight state management",
+    "react-query - server state caching",
+    "framer-motion - animations"
+  ],
+  "next_phase": "Phase 5 — Social Content Generation: TikTok scripts, Pinterest pins, Instagram captions"
+}

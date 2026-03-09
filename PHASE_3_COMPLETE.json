@@ -97,7 +97,7 @@
     "ConditionInfo"
   ],
   "validation_checklist": {
-    "typescript_compiles": false,
+    "typescript_compiles": true,
     "no_any_types": true,
     "all_ai_outputs_validated_with_zod": true,
     "all_error_paths_handled": true,
